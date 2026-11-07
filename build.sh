@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build one standalone mod pack from this repository.
 #
-#   ./build.sh                     -> dist/sit_anywhere-1.0.0.pck
+#   ./build.sh                     -> dist/sit_anywhere-1.1.0.pck
 #   ./build.sh --out FILE.pck      -> FILE.pck
 #
 # Requires Godot 4.5.x and python3 on PATH. Only the runtime files selected by .pckignore enter

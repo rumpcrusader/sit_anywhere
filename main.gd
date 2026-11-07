@@ -1,6 +1,8 @@
 extends Node
-## Sit Anywhere: Z sits desktop Anon down on the ground where he stands, and Z again stands him
-## back up. Movement or Q stand him up as well (desktop_player.gd's ordinary seat rules).
+## Sit Anywhere: Z sits desktop Anon down on the ground where he stands, Z again stands him back
+## up, and WASD shuffles him along the floor while seated. Q stands him up as well
+## (desktop_player.gd's ordinary seat rules, with ext/desktop_player.gd suppressing its
+## movement-stands-up check for this one seat).
 ##
 ## This borrows the game's own seat plumbing instead of inventing a pose: an invisible seat at
 ## his feet makes desktop_player.gd lower the eye to seated height, disable walking collision,
@@ -187,7 +189,7 @@ func _clear_direct(player: Node3D) -> void:
 	if "velocity" in player: player.set("velocity", Vector3.ZERO)
 
 
-## The game may stand him up without asking (WASD, E, Q, a knockdown): release our seat then.
+## The game may stand him up without asking (E, Q, a knockdown): release our seat then.
 func _process(delta: float) -> void:
 	if _seat == null: return
 	if not is_instance_valid(_seat) or not is_instance_valid(_player) or _player.get("seat") != _seat:
