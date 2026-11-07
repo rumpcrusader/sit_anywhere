@@ -136,6 +136,8 @@ func _sit() -> void:
 	if forward.length_squared() < .0001: forward = Vector3.FORWARD
 	forward = forward.normalized()
 
+	# A dedicated parent keeps Seating's furniture filters from treating the whole scene as the
+	# seat's furniture during accessibility and stand-up checks.
 	var holder := Node3D.new()
 	holder.name = "SitAnywhere"
 	var root: Node = _player.get_tree().current_scene
@@ -196,14 +198,9 @@ func _process(delta: float) -> void:
 
 
 func _bind_avatar() -> void:
-	var presentation: Node = _player.get_node_or_null("DesktopPresentation")
-	if presentation == null:
-		_avatar = _player.find_child("AnonBody", true, false) as Node3D
-	else:
-		_avatar = presentation.get("avatar") as Node3D
-	if not is_instance_valid(_avatar): _avatar = null
+	_avatar = _player.find_child("AnonBody", true, false) as Node3D
 	_left_foot = null; _right_foot = null; _body_ik = null
-	if _avatar == null: return
+	if not is_instance_valid(_avatar): _avatar = null; return
 	_left_foot = _avatar.find_child("LeftFootTarget", true, false) as Node3D
 	_right_foot = _avatar.find_child("RightFootTarget", true, false) as Node3D
 	_body_ik = _avatar.find_child("BodyIK", true, false)
@@ -213,7 +210,6 @@ func _bind_avatar() -> void:
 ## knees up. Runs after anon_body.gd's own foot targets, before the skeleton's IK pass.
 func _apply_floor_pose() -> void:
 	if not is_instance_valid(_seat) or not is_instance_valid(_player): return
-	if _avatar == null or _left_foot == null or _right_foot == null: return
 	if not is_instance_valid(_avatar) or not is_instance_valid(_left_foot) or not is_instance_valid(_right_foot): return
 	var scale := 1.0
 	var value: Variant = _avatar.get("model_scale")
