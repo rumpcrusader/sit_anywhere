@@ -19,6 +19,16 @@ adds only what is specific to `sit_anywhere`; keep it short and current.
 - Do not leave a built `sit_anywhere` pack in the game's mods folder while using `--mod-src`.
 - The toggle key is `KEY_SIT` at the top of `main.gd`; rebuild after changing it.
 
+## Commit and docs
+
+- One behavior, fix, refactor or docs change per commit.
+- Imperative scoped subject: `<scope>: <summary>`, 72 characters max, no trailing period.
+- Run `./build.sh` before committing code or build changes.
+- Commit locally. Do not push or tag unless the user asks.
+- Docs describe current behavior only: no design diary, changelog or speculation.
+- Keep `README.md` player-facing and `AGENTS.md` a short map. Update the layout when files move.
+- Code comments explain non-obvious decisions; do not narrate obvious code.
+
 ## Layout
 
 ```text
