@@ -34,6 +34,14 @@ const KNEE_UP := 0.50
 const POSE_TIME := 0.22
 ## Rest-facing half turn of the model (anon_body.gd REST_FACING).
 const REST_FACING := PI
+## Metres of body travel per complete two-foot shuffle cycle. The stance foot is moved back
+## through the seat by half this distance while the other foot swings forward, so it stays put
+## on the floor instead of gliding with him.
+const SHUFFLE_STEP := 0.28
+## Swing foot lift above the floor (metres at scale 1).
+const SHUFFLE_LIFT := 0.045
+## How quickly the legs return to the ordinary seated pose when he stops.
+const SHUFFLE_FADE := 8.0
 
 var _player: Node3D
 var _holder: Node3D
@@ -46,6 +54,11 @@ var _pose_time := 0.0
 var _from_left := Transform3D.IDENTITY
 var _from_right := Transform3D.IDENTITY
 var _has_from := false
+## Ground-seat travel drives the shuffle: phase, fade and direction.
+var _last_seat := Vector3.ZERO
+var _shuffle_phase := 0.0
+var _shuffle_amount := 0.0
+var _shuffle_dir := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -159,6 +172,10 @@ func _sit() -> void:
 	_seat = seat
 	_bind_avatar()
 	_pose_time = 0.0
+	_last_seat = seat.global_position
+	_shuffle_phase = 0.0
+	_shuffle_amount = 0.0
+	_shuffle_dir = Vector3.ZERO
 	_has_from = is_instance_valid(_left_foot) and is_instance_valid(_right_foot)
 	if _has_from:
 		_from_left = _left_foot.global_transform
@@ -196,7 +213,40 @@ func _process(delta: float) -> void:
 		_discard_seat()
 		return
 	_pose_time = minf(_pose_time + delta, POSE_TIME)
+	_update_shuffle(delta)
 	_apply_floor_pose()
+
+
+## The seat's actual travel is the gait clock, so the steps keep pace with the slide and stop
+## when he stops. `_shuffle_phase` wraps once per two-foot cycle; the stance foot's world
+## position then stays still while the body moves past it.
+func _update_shuffle(delta: float) -> void:
+	if not is_instance_valid(_seat): return
+	var moved := _seat.global_position - _last_seat
+	_last_seat = _seat.global_position
+	var flat := Vector3(moved.x, 0.0, moved.z)
+	var moving := flat.length_squared() > 0.0000001
+	_shuffle_amount = move_toward(_shuffle_amount, 1.0 if moving else 0.0, delta * SHUFFLE_FADE)
+	if not moving: return
+	var direction := flat.normalized()
+	if _shuffle_dir.length_squared() < 0.001:
+		_shuffle_dir = direction
+	else:
+		_shuffle_dir = _shuffle_dir.lerp(direction, 1.0 - exp(-delta / 0.08)).normalized()
+	_shuffle_phase = fposmod(_shuffle_phase + flat.length() / SHUFFLE_STEP, 1.0)
+
+
+## One foot's place in the cycle: x is its offset along the travel direction, y its lift.
+func _foot_step(phase: float) -> Vector2:
+	var half := SHUFFLE_STEP * 0.25
+	var cycle := fposmod(phase, 1.0)
+	if cycle < 0.5:
+		# Swing: lift the foot and carry it from back to front.
+		var t := cycle / 0.5
+		return Vector2(lerpf(-half, half, smoothstep(0.0, 1.0, t)), sin(PI * t) * SHUFFLE_LIFT)
+	# Stance: the foot stays planted while the body travels forward over it.
+	var t := (cycle - 0.5) / 0.5
+	return Vector2(lerpf(half, -half, t), 0.0)
 
 
 func _bind_avatar() -> void:
@@ -229,8 +279,13 @@ func _apply_floor_pose() -> void:
 	var ankle := _seat.global_position + forward * FOOT_FORWARD * scale + Vector3.UP * ANKLE_UP * scale
 	var spread := right * FOOT_SPREAD * scale
 	var basis := Basis(Vector3.UP, atan2(-forward.x, -forward.z) + REST_FACING)
-	var left := ankle - spread
-	var right_foot := ankle + spread
+	var travel := _shuffle_dir if _shuffle_dir.length_squared() > 0.001 else forward
+	var left_step := _foot_step(_shuffle_phase)
+	var right_step := _foot_step(_shuffle_phase + 0.5)
+	var left_shift := travel * (left_step.x * _shuffle_amount * scale)
+	var right_shift := travel * (right_step.x * _shuffle_amount * scale)
+	var left := ankle - spread + left_shift + Vector3.UP * (left_step.y * _shuffle_amount * scale)
+	var right_foot := ankle + spread + right_shift + Vector3.UP * (right_step.y * _shuffle_amount * scale)
 	var left_xf := Transform3D(basis, left)
 	var right_xf := Transform3D(basis, right_foot)
 	if _has_from and _pose_time < POSE_TIME:
@@ -241,7 +296,9 @@ func _apply_floor_pose() -> void:
 	_right_foot.global_transform = right_xf
 	if _body_ik != null and is_instance_valid(_body_ik) and "knee_hints" in _body_ik:
 		var knee := _seat.global_position + forward * KNEE_FORWARD * scale + Vector3.UP * KNEE_UP * scale
-		_body_ik.set("knee_hints", {"left": knee - spread, "right": knee + spread})
+		var left_knee := knee - spread + travel * (left_step.x * _shuffle_amount * scale * 0.5)
+		var right_knee := knee + spread + travel * (right_step.x * _shuffle_amount * scale * 0.5)
+		_body_ik.set("knee_hints", {"left": left_knee, "right": right_knee})
 
 
 static func _blend_transform(from: Transform3D, to: Transform3D, weight: float) -> Transform3D:
@@ -260,6 +317,10 @@ func _discard_seat() -> void:
 	_body_ik = null
 	_pose_time = 0.0
 	_has_from = false
+	_last_seat = Vector3.ZERO
+	_shuffle_phase = 0.0
+	_shuffle_amount = 0.0
+	_shuffle_dir = Vector3.ZERO
 	set_process(false)
 
 

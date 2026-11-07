@@ -3,7 +3,7 @@
 Desktop Anon can sit down on the ground wherever he is standing.
 
 - **Z** sits him down.
-- **WASD** shuffles him along the floor while he is sitting.
+- **WASD** shuffles him along the floor while he is sitting; his legs step with the shuffle.
 - **Z** again or **Q** stands him up.
 - **E** while seated stands him up too, as it does on any furniture seat.
 

@@ -7,7 +7,7 @@ adds only what is specific to `sit_anywhere`; keep it short and current.
 
 - Mod id `sit_anywhere`; version `1.1.0`; target game `0.3.0-maredev`.
 - Desktop human Anon only. Z toggles a ground sit where he stands; WASD shuffles him along the
-  floor while seated; Z, E or Q stands him up.
+  floor while seated, stepping his legs; Z, E or Q stands him up.
 - AnonPony keeps her own Z sit. VR, real furniture seats and the game's save format are untouched.
 - Player-facing summary and controls: `README.md`.
 
@@ -35,7 +35,7 @@ adds only what is specific to `sit_anywhere`; keep it short and current.
 ```text
 sit_anywhere/
   mod.json       id, version, game_version, entry
-  main.gd        Mods entry, Z toggle, temporary ground seat and floor-sit foot IK
+  main.gd        Mods entry, Z toggle, ground seat, floor-sit foot IK and shuffle gait
   ext/           desktop_player.gd extension: WASD shuffles the ground seat
   README.md      player-facing install and usage
   AGENTS.md      this guide
@@ -59,6 +59,6 @@ Keep this a map; update it when files change.
   the world closes, or the game stands him up by itself.
 - The negative seat `depth` is deliberate: it cancels the forward stand-up offset for a seat at
   his feet. Do not replace it with a positive depth without retesting the exit spot.
-- The foot IK override (targets and knee hints) applies only while the mod's own seat is active
-  and scales with `AnonBody.model_scale`.
+- The foot IK override (targets and knee hints) applies only while the mod's own seat is active,
+  scales with `AnonBody.model_scale`, and drives the shuffle gait from the seat's actual travel.
 - Desktop only: ignore AnonPony (`form_driver`) and headset rigs.

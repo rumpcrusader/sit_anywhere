@@ -3,7 +3,7 @@
 	"name": "Sit Anywhere",
 	"version": "1.1.0",
 	"author": "Anon",
-	"description": "Desktop Anon can sit down on the ground wherever he stands. Press Z to sit; WASD shuffles him around while seated, and Z, E or Q stands him up. Works indoors and out. Desktop only.",
+	"description": "Desktop Anon can sit down on the ground wherever he stands. Press Z to sit; WASD shuffles him around on stepping legs while seated, and Z, E or Q stands him up. Works indoors and out. Desktop only.",
 	"game_version": "0.3.0-maredev",
 	"entry": "res://mods/sit_anywhere/main.gd",
 	"extends": ["res://mods/sit_anywhere/ext/desktop_player.gd"]
