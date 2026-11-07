@@ -94,7 +94,10 @@ func _exit_tree() -> void:
 	_player = null
 
 
-func _unhandled_input(event: InputEvent) -> void:
+## _input, not _unhandled_input: take Z before the game's own key branch prints its debug fly
+## line and hands Z to AnonPony. The focus and state guards in _can_toggle keep typing and other
+## modes safe, and a refused toggle lets the event continue normally.
+func _input(event: InputEvent) -> void:
 	if not event is InputEventKey: return
 	var key := event as InputEventKey
 	if not key.pressed or key.echo or key.physical_keycode != KEY_SIT: return
