@@ -1,0 +1,22 @@
+# Godot editor cache
+.godot/
+
+# Generated resource UIDs. Mods load every script by path.
+*.uid
+
+# Local build output
+/dist/
+/build/
+*.pck
+*.zip
+
+# Logs and editor/OS noise
+*.log
+last-run.log
+.DS_Store
+Thumbs.db
+*.swp
+*~
+*.tmp
+*.bak
+*.orig
